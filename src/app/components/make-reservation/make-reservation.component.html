@@ -1,0 +1,203 @@
+<div class="container mt-4">
+<div class="d-flex justify-content-between mb-4">
+    <h4 class="border-bottom">Araç Kiralama</h4>
+  </div>
+</div>
+<div class="container mt-4 p-3 border border-secondary rounded bg-light">
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>{{ car?.model?.brand?.brandName }} - {{ car?.model?.modelName }}</h4>
+                        <div id="carImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div *ngFor="let image of carImages; let i = index" class="carousel-item"
+                                    [class.active]="i === 0">
+                                    <img [src]="getImageUrl(image.imageData)" class="d-block w-100" alt="Car Image">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carImagesCarousel"
+                                data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carImagesCarousel"
+                                data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Araç Sınıfı:</strong> {{ car?.carClass?.carClassDescription }}</p>
+                                <p><strong>Plaka:</strong> {{ car?.licensePlate }}</p>
+                                <p><strong>Şasi No:</strong> {{ car?.chassisNo }}</p>
+                                <p><strong>Model Yılı:</strong> {{ car?.year }}</p>
+                                <p><strong>Renk:</strong> {{ car?.color }}</p>
+                                <p><strong>Günlük Fiyat:</strong> {{ car?.dailyPrice |
+                                    currency:'₺':'symbol-narrow':'1.2-2' }}</p>
+                                <p><strong>Vites:</strong> {{ car?.gearshift ? 'Otomatik' : 'Manuel' }}</p>
+                                <p><strong>Yolcu Kapasitesi:</strong> {{ car?.passengers }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Bagaj Kapasitesi:</strong> {{ car?.bags }}</p>
+                                <p><strong>Kapı Sayısı:</strong> {{ car?.doors }}</p>
+                                <p><strong>Yakıt Türü:</strong> {{ car?.fuelType }}</p>
+                                <p><strong>Araba Türü:</strong> {{ car?.carType }}</p>
+                                <p><strong>KM:</strong> {{ car?.km }}</p>
+                                <p><strong>Konum:</strong> {{ car?.location?.locationName }}</p>
+                                <p><strong>Durum:</strong> {{ car?.status }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="accordion mt-4" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFeatures">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseFeatures" aria-expanded="true" aria-controls="collapseFeatures">
+                    Özellikler
+                </button>
+            </h2>
+            <div id="collapseFeatures" class="accordion-collapse collapse" aria-labelledby="headingFeatures"
+                data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <div *ngIf="car?.carSpecifications?.length; else noSpecifications" class="border p-2 mb-2">
+                        <div *ngFor="let spec of car?.carSpecifications" class="border-bottom pb-2 mb-2">
+                            <p>{{ spec.specificationDescription.description }}</p>
+                        </div>
+                    </div>
+                    <ng-template #noSpecifications>
+                        <p>Herhangi bir özellik bulunamadı</p>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingConditions">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseConditions" aria-expanded="false" aria-controls="collapseConditions">
+                    Kiralama Koşulları
+                </button>
+            </h2>
+            <div id="collapseConditions" class="accordion-collapse collapse" aria-labelledby="headingConditions"
+                data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <div *ngIf="car?.carRentingConditions?.length; else noConditions" class="border p-2 mb-2">
+                        <div *ngFor="let condition of car?.carRentingConditions" class="border-bottom pb-2 mb-2">
+                            <p><strong>{{ condition.rentingCondition.rentingConditionName }}: </strong> {{
+                                condition.conditionValue }}
+                            </p>
+                        </div>
+                    </div>
+                    <ng-template #noConditions>
+                        <p>Herhangi bir koşul bulunamadı</p>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingHelpDesk">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseHelpDesk" aria-expanded="false" aria-controls="collapseHelpDesk">
+                    Yardım Masası
+                </button>
+            </h2>
+            <div id="collapseHelpDesk" class="accordion-collapse collapse" aria-labelledby="headingHelpDesk"
+                data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <div class="chat-messages">
+                        <div *ngIf="messages.length > 0; else noMessages">
+                            <div *ngFor="let message of messages"
+                                [ngClass]="{'message-service': message.messageId === 1, 'message-customer': message.messageId === 0}">
+                                <p>{{ message.message }}</p>
+                                <span>{{ message.messageDate | date:'short' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ng-template #noMessages>
+                        <p>Mesaj bulunamadı</p>
+                    </ng-template>
+                    <div class="chat-input">
+                        <input type="text" [(ngModel)]="newMessage" placeholder="Mesajınızı yazın...">
+                        <button (click)="sendMessage()">Gönder</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingRent">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseRent" aria-expanded="false" aria-controls="collapseRent">
+                Kirala
+              </button>
+            </h2>
+            <div id="collapseRent" class="accordion-collapse collapse" aria-labelledby="headingRent" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  <form [formGroup]="rentalForm" (ngSubmit)="addReservationAndPayment()">
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="dailyPrice" class="form-label"><strong>Günlük Kiralama Ücreti</strong></label>
+                        <div class="form-control bg-light">{{ car?.dailyPrice | currency:'₺':'symbol-narrow':'1.2-2' }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="totalPrice" class="form-label"><strong>Toplam Kiralama Ücreti</strong></label>
+                        <div class="form-control bg-light">{{ totalPrice | currency:'₺':'symbol-narrow':'1.2-2' }}</div>
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="startDate" class="form-label"><strong>Kiralama Tarihi</strong></label>
+                        <input type="date" class="form-control" id="startDate" formControlName="startDate" (change)="calculateTotalPrice()">
+                        <div *ngIf="rentalForm.controls['startDate'].errors?.['min']">
+                          <small class="text-danger">Kiralama tarihi bugünden önce olamaz.</small>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="endDate" class="form-label"><strong>Teslim Tarihi</strong></label>
+                        <input type="date" class="form-control" id="endDate" formControlName="endDate" (change)="calculateTotalPrice()">
+                        <div *ngIf="rentalForm.controls['endDate'].errors?.['min']">
+                          <small class="text-danger">Teslim tarihi kiralama tarihinden önce olamaz.</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                          <label for="pickoffLocation" class="form-label"><strong>Teslim Alma Lokasyonu</strong></label>
+                          <div class="form-control bg-light">{{ car?.location?.locationName}}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dropOffLocation" class="form-label"><strong>Teslim Etme Lokasyonu</strong></label>
+                            <select class="form-select" id="locationSelect" formControlName="dropOffLocation">
+                              <option value="" disabled selected>Seçiniz</option>
+                              <option *ngFor="let location of locations" [value]="location.locationId">{{ location.locationName }}</option>
+                            </select>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="paymentMethod" class="form-label"><strong>Ödeme Yöntemi</strong></label>
+                            <select class="form-select" id="paymentMethod" formControlName="paymentMethod">
+                                <option value="" disabled selected>Seçiniz</option>
+                              <option value="Kredi Kartı">Kredi Kartı</option>
+                              <option value="Nakit">Nakit</option>
+                              <option value="Havale">Havale</option>
+                            </select>
+                        </div>
+                      </div>
+                      <button type="submit" class="btn btn-primary" [disabled]="!rentalForm.valid">Rezervasyon Yap</button>
+                  </form>
+                </div>
+              </div>              
+          </div>  
+    </div>
+</div>
+

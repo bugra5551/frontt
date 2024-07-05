@@ -1,0 +1,45 @@
+<div class="d-flex justify-content-center align-items-center" style="height: 75vh;">
+  <div class="card p-4" style="width: 25rem;">
+    <form (ngSubmit)="login()">
+      <h3 class="text-center mb-4">Üye Girişi</h3>
+
+      <!-- Başarı Mesajı -->
+      <div *ngIf="successMessage" class="alert alert-success text-center" role="alert">
+        {{ successMessage }}
+      </div>
+
+      <!-- Hata Mesajı -->
+      <div *ngIf="errorMessage" class="alert alert-danger text-center" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Email input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <label class="form-label" for="form2Example1">Eposta</label>
+        <input type="email" id="form2Example1" class="form-control" [(ngModel)]="username" name="username" required />
+      </div>
+
+      <!-- Password input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <label class="form-label" for="form2Example2">Şifre</label>
+        <input type="password" id="form2Example2" class="form-control" [(ngModel)]="password" name="password"
+          required />
+      </div>
+
+      <!-- 2 column grid layout for inline styling -->
+      <div class="row mb-4">
+        <div class="col d-flex justify-content-center">
+          <!-- Submit button -->
+          <button type="submit" data-mdb-button-init data-mdb-ripple-init
+            class="btn btn-primary btn-block mb-4">Giriş</button>
+        </div>
+
+      </div>
+
+      <!-- Register buttons -->
+      <div class="text-center">
+        <p>Üye değil misiniz? <a href="register">Kayıt Ol</a></p>
+      </div>
+    </form>
+  </div>
+</div>

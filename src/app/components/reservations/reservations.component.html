@@ -1,0 +1,50 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between mb-4">
+    <h4 class="border-bottom">Rezervasyonlarım ({{reservations.length}})</h4>
+    <div class="legend">
+      <div><span class="legend-color legend-active"></span> Aktif Kiralıklar</div>
+      <div><span class="legend-color legend-completed"></span> Kirası Tamamlanmış</div>
+    </div>
+  </div>
+  <div *ngIf="reservations.length > 0; else noReservations">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Araç</th>
+          <th scope="col">Kiralama Tarihi</th>
+          <th scope="col">Teslim Tarihi</th>
+          <th scope="col">Ödeme Yöntemi</th>
+          <th scope="col">Toplam Ücret</th>
+          <th scope="col">Ödeme Durumu</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let reservation of reservations" [class.table-success]="!reservation.isDeleted" [class.table-danger]="reservation.isDeleted">
+          <td>{{ reservation.car?.model?.brand?.brandName }} {{ reservation.car?.model?.modelName }}</td>
+          <td>{{ reservation.pickUpDate | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ reservation.dropOffDate | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <ng-container *ngIf="reservation.payment?.paymentMethod === 'Kredi Kartı'; else otherPayment">
+              <i class="fas fa-credit-card text-success"></i> Kredi Kartı
+            </ng-container>
+            <ng-template #otherPayment>
+              <i class="fa-solid fa-money-check-dollar"></i> {{ reservation.payment?.paymentMethod }}
+            </ng-template>
+          </td>
+          <td>{{ reservation.totalPrice | currency: '₺':'symbol-narrow':'1.2-2' }}</td>
+          <td>
+            <ng-container *ngIf="reservation.payment?.paymentStatus === 'Tamamlandı'; else paymentPending">
+              <i class="fas fa-check-circle text-success"></i> Tamamlandı
+            </ng-container>
+            <ng-template #paymentPending>
+              <i class="fas fa-clock text-warning"></i> Beklemede
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #noReservations>
+    <p>Henüz bir rezervasyonunuz yok.</p>
+  </ng-template>
+</div>

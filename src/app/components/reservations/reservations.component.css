@@ -1,0 +1,45 @@
+.legend {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .legend div {
+    display: flex;
+    align-items: center;
+  }
+  
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    margin-right: 5px;
+  }
+  
+  .legend-active {
+    background-color: #8acda1; /* Daha koyu yeşil */
+  }
+  
+  .legend-completed {
+    background-color: #e4a9b5; /* Daha koyu pembe */
+  }
+  
+  .table-active-rental {
+    background-color: #8acda1 !important; /* Daha koyu yeşil */
+    color: #ffffff; /* Metin rengi beyaz olsun */
+  }
+  
+  .table-completed-rental {
+    background-color: #e4a9b5 !important; /* Daha koyu pembe */
+    color: #ffffff; /* Metin rengi beyaz olsun */
+  }
+  
+  .table-hover tr.table-active-rental {
+    background-color: #8acda1 !important; /* Daha koyu yeşil */
+    color: #ffffff; /* Metin rengi beyaz olsun */
+  }
+  
+  .table-hover tr.table-completed-rental {
+    background-color: #e4a9b5 !important; /* Daha koyu pembe */
+    color: #ffffff; /* Metin rengi beyaz olsun */
+  }
+  

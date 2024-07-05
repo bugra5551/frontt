@@ -1,0 +1,46 @@
+.accordion-button::after {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .accordion-button.collapsed::after {
+    transform: rotate(180deg);
+  }
+  
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .legend div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+  }
+  
+  .legend-active {
+    background-color: #d4edda;
+  }
+  
+  .legend-completed {
+    background-color: #f8d7da;
+  }
+  
+  .table-active-rental {
+    background-color: #d4edda !important;
+  }
+  
+  .table-completed-rental {
+    background-color: #f8d7da !important;
+  }
+  
+  .alert-success {
+    margin-top: 20px;
+  }
+  

@@ -1,0 +1,80 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container mt-3">
+    <a class="navbar-brand" href="#">
+      <img
+        src="https://media.istockphoto.com/id/1290071290/vector/rental-car-icon.jpg?s=612x612&w=0&k=20&c=q4EsvU3jJJYbcZTJ1EzKh6c-Dvy39HagvAUgTCRK9bE="
+        alt="Logo" style="width: 90px; height: auto; margin-right: 10px;"> Car Rental App
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" routerLink="">Ana Sayfa</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" routerLink="carlist">Araçlar</a>
+        </li>
+        <li class="nav-item" *ngIf="isLoggedIn && authService.getRole() === 'Customer'">
+          <a class="nav-link active" aria-current="page" routerLink="reservations">Rezervasyonlarım</a>
+        </li>
+        <li class="nav-item dropdown" *ngIf="authService.getRole() === 'Admin' || authService.getRole() === 'Employee'">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Yönetim Paneli
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" routerLink="car-management">Araç Yönetimi</a></li>
+            <li><a class="dropdown-item" routerLink="data-management">Veri Yönetimi</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="d-flex align-items-center d-lg-none">
+        <a href="tel:444 28 47" class="navbar-mobile-toggle">
+          <i class="icon icon-call"></i>
+        </a>
+
+        <a href="/hesap/giris" class="navbar-mobile-toggle">
+          <i class="icon icon-user"></i>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar"
+          aria-expanded="false">
+          <i class="icon icon-hamburger-menu"></i>
+        </button>
+      </div>
+
+      <form class="d-flex" role="search" *ngIf="!isLoggedIn">
+        <a class="nav-link btn btn-primary" routerLink="login">Üye Girişi</a>
+      </form>
+      <div *ngIf="isLoggedIn">
+        <button class="btn btn-info button-spacing" (click)="openUserInfo()">Hoşgeldin {{fullName}}</button>
+        <button class="btn btn-secondary" (click)="logout()">Çıkış</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Kullanıcı bilgileri popup -->
+<div class="modal fade" id="userInfoModal" tabindex="-1" aria-labelledby="userInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userInfoModalLabel">Kullanıcı Bilgileri</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Kullanıcı bilgilerini burada gösterin -->
+        <p><strong>Rol:</strong> {{ userRole }}</p>
+        <p><strong>İsim:</strong> {{fullName}}</p>
+        <p><strong>Kullanıcı Adı:</strong> {{ username }}</p>
+        <!-- Diğer kullanıcı bilgileri burada gösterilebilir -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>

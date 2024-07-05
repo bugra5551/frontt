@@ -1,0 +1,285 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between mb-4">
+    <h4 class="border-bottom">Veri Yönetim Paneli</h4>
+  </div>
+  <div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingBrand">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseBrand" aria-expanded="false" aria-controls="collapseBrand">
+          Marka Yönetimi
+        </button>
+      </h2>
+      <div id="collapseBrand" class="accordion-collapse collapse" aria-labelledby="headingBrand"
+        data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form [formGroup]="brandForm" (ngSubmit)="onBrandSubmit()">
+            <div class="mb-3">
+              <label for="brandName" class="form-label">Marka Adı</label>
+              <input type="text" id="brandName" formControlName="brandName" class="form-control"
+                placeholder="Yeni Marka Adı">
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!isBrandEdit">Ekle</button>
+            <button type="button" class="btn btn-primary" *ngIf="isBrandEdit"
+              (click)="onBrandUpdate()">Güncelle</button>
+          </form>
+
+          <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div *ngIf="brandErrorMessage" class="alert alert-danger mt-3">{{ brandErrorMessage }}</div>
+
+          <h5 class="mt-4">Mevcut Markalar</h5>
+          <ul class="list-group">
+            <li *ngFor="let brand of brands" class="list-group-item">
+              {{ brand.brandName }}
+              <button class="btn btn-sm btn-warning float-end ms-2" (click)="editBrand(brand)">Düzenle</button>
+              <button *ngIf="!brand.isDeleted" class="btn btn-sm btn-danger float-end"
+                (click)="deleteBrand(brand)">Sil</button>
+              <button *ngIf="brand.isDeleted" class="btn btn-sm btn-success float-end"
+                (click)="restoreBrand(brand)">Geri Al</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingModel">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseModel" aria-expanded="false" aria-controls="collapseModel">
+          Model Yönetimi
+        </button>
+      </h2>
+      <div id="collapseModel" class="accordion-collapse collapse" aria-labelledby="headingModel"
+        data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form [formGroup]="modelForm" (ngSubmit)="onModelSubmit()">
+            <div class="mb-3">
+              <label for="brandSelect" class="form-label">Marka Seçin</label>
+              <select id="brandSelect" formControlName="brandId" class="form-select" (change)="onBrandChange($event)">
+                <option value="" disabled selected>Marka Seçin</option>
+                <option *ngFor="let brand of brands" [value]="brand.brandId">{{ brand.brandName }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="modelName" class="form-label">Model Adı</label>
+              <input type="text" id="modelName" formControlName="modelName" class="form-control"
+                placeholder="Yeni Model Adı">
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!isModelEdit">Ekle</button>
+            <button type="button" class="btn btn-primary" *ngIf="isModelEdit"
+              (click)="onModelUpdate()">Güncelle</button>
+          </form>
+
+          <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div *ngIf="modelErrorMessage" class="alert alert-danger mt-3">{{ modelErrorMessage }}</div>
+
+          <h5 class="mt-4">Mevcut Modeller</h5>
+          <ul class="list-group">
+            <li *ngFor="let model of filteredModels" class="list-group-item">
+              {{ model.modelName }}
+              <button class="btn btn-sm btn-warning float-end ms-2" (click)="editModel(model)">Düzenle</button>
+              <button *ngIf="!model.isDeleted" class="btn btn-sm btn-danger float-end"
+                (click)="deleteModel(model)">Sil</button>
+              <button *ngIf="model.isDeleted" class="btn btn-sm btn-success float-end"
+                (click)="restoreModel(model)">Geri Al</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingLocation">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseLocation" aria-expanded="false" aria-controls="collapseLocation">
+          Lokasyon Yönetimi
+        </button>
+      </h2>
+      <div id="collapseLocation" class="accordion-collapse collapse" aria-labelledby="headingLocation"
+        data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form [formGroup]="locationForm" (ngSubmit)="onLocationSubmit()">
+            <div class="mb-3">
+              <label for="locationName" class="form-label">Lokasyon Adı</label>
+              <input type="text" id="locationName" formControlName="locationName" class="form-control"
+                placeholder="Yeni Lokasyon Adı">
+              <label for="address" class="form-label">Adres</label>
+              <input type="text" id="address" formControlName="address" class="form-control" placeholder="Yeni Adres">
+              <label for="city" class="form-label">Şehir</label>
+              <input type="text" id="city" formControlName="city" class="form-control" placeholder="Yeni Şehir">
+              <label for="country" class="form-label">Ülke</label>
+              <input type="text" id="country" formControlName="country" class="form-control" placeholder="Yeni Ülke">
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!isLocationEdit">Ekle</button>
+            <button type="button" class="btn btn-primary" *ngIf="isLocationEdit"
+              (click)="onLocationUpdate()">Güncelle</button>
+          </form>
+
+          <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div *ngIf="locationErrorMessage" class="alert alert-danger mt-3">{{ locationErrorMessage }}</div>
+          <h5 class="mt-4">Mevcut Lokasyonlar</h5>
+          <ul class="list-group">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Lokasyon Adı</th>
+                  <th scope="col">Adres</th>
+                  <th scope="col">Şehir</th>
+                  <th scope="col">Ülke</th>
+                  <th scope="col">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let location of locations">
+                  <td>{{ location.locationName }}</td>
+                  <td>{{ location.address }}</td>
+                  <td>{{ location.city }}</td>
+                  <td>{{ location.country }}</td>
+                  <td>
+                    <button *ngIf="!location.isDeleted" class="btn btn-sm btn-danger me-2"
+                    (click)="deleteLocation(location)">Sil</button>
+                    <button class="btn btn-sm btn-warning me-2" (click)="editLocation(location)">Düzenle</button>
+                    <button *ngIf="location.isDeleted" class="btn btn-sm btn-success"
+                      (click)="restoreLocation(location)">Geri Al</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingCarClass">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseCarClass" aria-expanded="false" aria-controls="collapseCarClass">
+          Araç Sınıfı Yönetimi
+        </button>
+      </h2>
+      <div id="collapseCarClass" class="accordion-collapse collapse" aria-labelledby="headingCarClass"
+        data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form [formGroup]="carClassForm" (ngSubmit)="onCarClassSubmit()">
+            <div class="mb-3">
+              <label for="carClassDescription" class="form-label">Araç Sınıfı Açıklaması</label>
+              <input type="text" id="carClassDescription" formControlName="carClassDescription" class="form-control"
+                placeholder="Yeni Araç Sınıfı Açıklaması">
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!isCarClassEdit">Ekle</button>
+            <button type="button" class="btn btn-primary" *ngIf="isCarClassEdit"
+              (click)="onCarClassUpdate()">Güncelle</button>
+          </form>
+
+          <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div *ngIf="carClassErrorMessage" class="alert alert-danger mt-3">{{ carClassErrorMessage }}</div>
+
+          <h5 class="mt-4">Mevcut Araç Sınıfları</h5>
+          <ul class="list-group">
+            <li *ngFor="let carClass of carClasses" class="list-group-item">
+              {{ carClass.carClassDescription }}
+              <button class="btn btn-sm btn-warning float-end ms-2" (click)="editCarClass(carClass)">Düzenle</button>
+              <button *ngIf="!carClass.isDeleted" class="btn btn-sm btn-danger float-end"
+                (click)="deleteCarClass(carClass)">Sil</button>
+              <button *ngIf="carClass.isDeleted" class="btn btn-sm btn-success float-end"
+                (click)="restoreCarClass(carClass)">Geri Al</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingSpecificationDescription">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseSpecificationDescription" aria-expanded="false"
+          aria-controls="collapseSpecificationDescription">
+          Özellik Yönetimi
+        </button>
+      </h2>
+      <div id="collapseSpecificationDescription" class="accordion-collapse collapse"
+        aria-labelledby="headingSpecificationDescription" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form [formGroup]="specificationDescriptionForm" (ngSubmit)="onSpecificationDescriptionSubmit()">
+            <div class="mb-3">
+              <label for="description" class="form-label">Özellik Açıklaması</label>
+              <input type="text" id="description" formControlName="description" class="form-control"
+                placeholder="Yeni Özellik Açıklaması">
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!isSpecificationDescriptionEdit">Ekle</button>
+            <button type="button" class="btn btn-primary" *ngIf="isSpecificationDescriptionEdit"
+              (click)="onSpecificationDescriptionUpdate()">Güncelle</button>
+          </form>
+
+          <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div *ngIf="specificationDescriptionErrorMessage" class="alert alert-danger mt-3">{{
+            specificationDescriptionErrorMessage }}</div>
+
+          <h5 class="mt-4">Mevcut Özellikler</h5>
+          <ul class="list-group">
+            <li *ngFor="let specificationDescription of specificationDescriptions" class="list-group-item">
+              {{ specificationDescription.description }}
+              <button class="btn btn-sm btn-warning float-end ms-2"
+                (click)="editSpecificationDescription(specificationDescription)">Düzenle</button>
+              <button *ngIf="!specificationDescription.isDeleted" class="btn btn-sm btn-danger float-end"
+                (click)="deleteSpecificationDescription(specificationDescription)">Sil</button>
+              <button *ngIf="specificationDescription.isDeleted" class="btn btn-sm btn-success float-end"
+                (click)="restoreSpecificationDescription(specificationDescription)">Geri Al</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingRentingCondition">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseRentingCondition" aria-expanded="false" aria-controls="collapseRentingCondition">
+          Kiralama Koşulu Yönetimi
+        </button>
+      </h2>
+      <div id="collapseRentingCondition" class="accordion-collapse collapse" aria-labelledby="headingRentingCondition"
+        data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form [formGroup]="rentingConditionForm" (ngSubmit)="onRentingConditionSubmit()">
+            <div class="mb-3">
+              <label for="rentingConditionName" class="form-label">Kiralama Koşulu Adı</label>
+              <input type="text" id="rentingConditionName" formControlName="rentingConditionName" class="form-control"
+                placeholder="Yeni Kiralama Koşulu Adı">
+            </div>
+            <div class="mb-3">
+              <label for="rentingConditionDescription" class="form-label">Kiralama Koşulu Açıklaması</label>
+              <input type="text" id="rentingConditionDescription" formControlName="rentingConditionDescription"
+                class="form-control" placeholder="Yeni Kiralama Koşulu Açıklaması">
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!isRentingConditionEdit">Ekle</button>
+            <button type="button" class="btn btn-primary" *ngIf="isRentingConditionEdit"
+              (click)="onRentingConditionUpdate()">Güncelle</button>
+          </form>
+
+          <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div *ngIf="rentingConditionErrorMessage" class="alert alert-danger mt-3">{{ rentingConditionErrorMessage }}
+          </div>
+
+          <h5 class="mt-4">Mevcut Kiralama Koşulları</h5>
+          <ul class="list-group">
+            <li *ngFor="let rentingCondition of rentingConditions" class="list-group-item">
+              <div>
+                <strong>{{ rentingCondition.rentingConditionName }}</strong>
+                <p>{{ rentingCondition.rentingConditionDescription }}</p>
+              </div>
+              <button class="btn btn-sm btn-warning float-end ms-2"
+                (click)="editRentingCondition(rentingCondition)">Düzenle</button>
+              <button *ngIf="!rentingCondition.isDeleted" class="btn btn-sm btn-danger float-end"
+                (click)="deleteRentingCondition(rentingCondition)">Sil</button>
+              <button *ngIf="rentingCondition.isDeleted" class="btn btn-sm btn-success float-end"
+                (click)="restoreRentingCondition(rentingCondition)">Geri Al</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+
+  </div>
+</div>

@@ -1,0 +1,803 @@
+<div class="container mt-4">
+  <div *ngIf="successMessage" class="alert alert-success mt-3" role="alert">
+    {{ successMessage }}
+  </div>
+  <div class="d-flex justify-content-between mb-4">
+    <h4 class="border-bottom">Araç Yönetimi</h4>
+    <button *ngIf="authService.getRole() === 'Admin'" class="btn btn-success" (click)="openAddCarModal()">Yeni Araç
+      Ekle</button>
+  </div>
+  <h3 class="text-center mb-4" style="color: #d9534f; border-bottom: 2px solid #d9534f; padding-bottom: 10px;">Kiradaki
+    Araçlar - ({{rentedCars.length}})</h3>
+  <div class="row mb-4">
+    <div *ngFor="let car of rentedCars" class="col-sm-6 col-md-4 col-lg-3 mb-4">
+      <div class="card h-100" style="background-color: #f8d7da;">
+        <img *ngIf="car.firstImage" [src]="getImageUrl(car.firstImage)" class="card-img-top" alt="Araba Resmi">
+        <img *ngIf="!car.firstImage"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2Kxum9Yw3fcOGZove2KiEVlGR8xE6T8Wtqw&s"
+          class="card-img-top" alt="Araba Resmi">
+        <div class="card-body d-flex flex-column">
+          <h5 class="mb-1">{{ car.model.brand?.brandName }} - {{ car.model.modelName }}</h5>
+          <p class="mb-1">
+            {{ car.dailyPrice | currency : '₺' : 'symbol-narrow' : '1.2-2' }}
+          </p>
+          <p *ngIf="daysUntilDropOff(car.reservations[0].dropOffDate) > 0"> <strong>Teslim tarihine {{
+              daysUntilDropOff(car.reservations[0].dropOffDate) }} gün var </strong>
+            <i class="fa-solid fa-calendar-days"></i>
+          </p>
+          <p *ngIf="daysUntilDropOff(car.reservations[0].dropOffDate) === 0">
+            <strong>Teslim Tarihi </strong>
+            <i class="fa-solid fa-circle-exclamation"></i> <!-- Zil simgesi için Font Awesome kullanıyoruz -->
+          </p>
+          <div class="mt-auto d-flex justify-content-between">
+            <div class="d-flex w-100">
+              <button class="btn btn-primary flex-grow-1" (click)="openCarDetails(car)"
+                (click)="setActiveTab('details-tab')">Detaylar</button>
+              <button class="btn btn-success ms-2 flex-grow-1"
+                [disabled]="daysUntilDropOff(car.reservations[0].dropOffDate) !== 0"
+                (click)="openReceiveCarModal(car)">Teslim Al</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h3 class="text-center mb-4" style="color: #d9c24f; border-bottom: 2px solid #d9c24f; padding-bottom: 10px;">Bakımdaki
+    Araçlar - ({{maintenanceCars.length}})</h3>
+  <div class="row mb-4">
+    <div *ngFor="let car of maintenanceCars" class="col-sm-6 col-md-4 col-lg-3 mb-4">
+      <div class="card h-100" style="background-color: #d9c24f;">
+        <img *ngIf="car.firstImage" [src]="getImageUrl(car.firstImage)" class="card-img-top" alt="Araba Resmi">
+        <img *ngIf="!car.firstImage"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2Kxum9Yw3fcOGZove2KiEVlGR8xE6T8Wtqw&s"
+          class="card-img-top" alt="Araba Resmi">
+        <div class="card-body d-flex flex-column">
+          <h5 class="mb-1">{{ car.model.brand?.brandName }} - {{ car.model.modelName }}</h5>
+          <p class="mb-1">
+            {{ car.dailyPrice | currency : '₺' : 'symbol-narrow' : '1.2-2' }}
+          </p>
+          <div class="mt-auto d-flex justify-content-between">
+            <div class="d-flex w-100">
+              <button class="btn btn-primary flex-grow-1" (click)="openCarDetails(car)"
+                (click)="setActiveTab('details-tab')">Detaylar</button>
+              <button class="btn btn-success ms-2 flex-grow-1" (click)="completeMaintenance(car)">Bakımı
+                Tamamla</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h3 class="text-center mb-4" style="color: #5cb85c; border-bottom: 2px solid #5cb85c; padding-bottom: 10px;">Aktif
+    Araçlar - ({{cars.length}})</h3>
+  <div class="row">
+    <div *ngFor="let car of cars" class="col-sm-6 col-md-4 col-lg-3 mb-4">
+      <div class="card h-100" style="background-color: #d4edda;">
+        <img *ngIf="car.firstImage" [src]="getImageUrl(car.firstImage)" class="card-img-top" alt="Araba Resmi">
+        <img *ngIf="!car.firstImage"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2Kxum9Yw3fcOGZove2KiEVlGR8xE6T8Wtqw&s"
+          class="card-img-top" alt="Araba Resmi">
+        <div class="card-body d-flex flex-column">
+          <h5 class="mb-1">{{ car.model.brand?.brandName }} - {{ car.model.modelName }}</h5>
+          <p class="mb-1">
+            {{ car.dailyPrice | currency : '₺' : 'symbol-narrow' : '1.2-2' }}
+          </p>
+          <small class="text-muted">{{ car.chassisNo | titlecase }}</small>
+          <button class="btn btn-primary mt-auto" (click)="openCarDetails(car)"
+            (click)="setActiveTab('details-tab')">Detaylar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="carDetailsModal" tabindex="-1" aria-labelledby="carDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>{{ selectedCar?.model?.brand?.brandName }} - {{ selectedCar?.model?.modelName }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="details-tab" (click)="setActiveTab('details-tab')" data-bs-toggle="tab"
+              data-bs-target="#details" type="button" role="tab" aria-controls="details"
+              aria-selected="true">Detaylar</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="images-tab" (click)="setActiveTab('images-tab')" data-bs-toggle="tab"
+              data-bs-target="#images" type="button" role="tab" aria-controls="images"
+              aria-selected="false">Fotoğraflar</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="features-tab" (click)="setActiveTab('features-tab')" data-bs-toggle="tab"
+              data-bs-target="#features" type="button" role="tab" aria-controls="features"
+              aria-selected="false">Özellikler</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="conditions-tab" (click)="setActiveTab('conditions-tab')" data-bs-toggle="tab"
+              data-bs-target="#conditions" type="button" role="tab" aria-controls="conditions"
+              aria-selected="false">Kiralama Koşulları</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button *ngIf="authService.getRole() === 'Admin' || authService.getRole() === 'Employee'"
+              (click)="setActiveTab('damages-tab')" class="nav-link" id="damages-tab" data-bs-toggle="tab"
+              data-bs-target="#damage" type="button" role="tab" aria-controls="damage" aria-selected="false">Hasar
+              Bilgileri</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="helpdesk-tab" (click)="setActiveTab('helpdesk-tab')" data-bs-toggle="tab"
+              data-bs-target="#helpdesk" type="button" role="tab" aria-controls="helpdesk" aria-selected="false">Yardım
+              Masası</button>
+          </li>
+        </ul>
+        <div class="tab-content mt-3" id="myTabContent">
+          <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
+            <div class="row border border-secondary rounded p-3">
+              <div class="col-md-6">
+                <p><strong>Araç Sınıfı:</strong> {{ selectedCar?.carClass?.carClassDescription }}</p>
+                <p><strong>Plaka:</strong> {{ selectedCar?.licensePlate }}</p>
+                <p><strong>Şasi No:</strong> {{ selectedCar?.chassisNo }}</p>
+                <p><strong>Model Yılı:</strong> {{ selectedCar?.year }}</p>
+                <p><strong>Renk:</strong> {{ selectedCar?.color }}</p>
+                <p><strong>Günlük Fiyat:</strong> {{ selectedCar?.dailyPrice | currency : '₺' : 'symbol-narrow' :
+                  '1.2-2' }}</p>
+                <p><strong>Durum:</strong> {{ selectedCar?.status }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Vites:</strong> {{ selectedCar?.gearshift ? 'Otomatik' : 'Manuel' }}</p>
+                <p><strong>Yolcu Kapasitesi:</strong> {{ selectedCar?.passengers }}</p>
+                <p><strong>Bagaj Kapasitesi:</strong> {{ selectedCar?.bags }}</p>
+                <p><strong>Kapı Sayısı:</strong> {{ selectedCar?.doors }}</p>
+                <p><strong>Yakıt Türü:</strong> {{ selectedCar?.fuelType }}</p>
+                <p><strong>Araba Türü:</strong> {{ selectedCar?.carType }}</p>
+                <p><strong>KM:</strong> {{ selectedCar?.km }}</p>
+                <p><strong>Konum:</strong> {{ selectedCar?.location?.locationName }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
+            <div *ngIf="carImages.length; else noImages">
+              <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                  <button *ngFor="let image of carImages; let i = index" type="button"
+                    data-bs-target="#carouselExampleIndicators" [attr.data-bs-slide-to]="i" [class.active]="i === 0"
+                    [attr.aria-label]="'Slide ' + (i + 1)" aria-current="true"></button>
+                </div>
+                <div class="carousel-inner">
+                  <div *ngFor="let image of carImages; let i = index" class="carousel-item" [class.active]="i === 0">
+                    <img [src]="getImageUrl(image.imageData)" class="d-block w-100" alt="...">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+            </div>
+            <ng-template #noImages>
+              <p>Herhangi bir fotoğraf bulunamadı</p>
+            </ng-template>
+            <div class="mt-3">
+              <button class="btn btn-primary" (click)="openAddImageModal()">Fotoğraf Ekle</button>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+            <div class="row border border-secondary rounded p-3">
+              <div *ngIf="selectedCar?.carSpecifications?.length; else noSpecifications">
+                <div *ngFor="let spec of selectedCar?.carSpecifications"
+                  class="border border-secondary rounded p-2 mb-2">
+                  <p>{{ spec.specificationDescription.description }}</p>
+                </div>
+              </div>
+              <ng-template #noSpecifications>
+                <p>Herhangi bir özellik bulunamadı</p>
+              </ng-template>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="conditions" role="tabpanel" aria-labelledby="conditions-tab">
+            <div class="row border border-secondary rounded p-3">
+              <div *ngIf="selectedCar?.carRentingConditions?.length; else noConditions">
+                <div *ngFor="let condition of selectedCar?.carRentingConditions"
+                  class="border border-secondary rounded p-2 mb-2">
+                  <p><strong>{{ condition.rentingCondition.rentingConditionName }}: </strong> {{
+                    condition.conditionValue }}</p>
+                </div>
+              </div>
+              <ng-template #noConditions>
+                <p>Herhangi bir koşul bulunamadı</p>
+              </ng-template>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="damage" role="tabpanel" aria-labelledby="damage-tab">
+            <div class="row border border-secondary rounded p-3">
+              <div *ngIf="selectedCar?.carDamageDetails?.length; else noDamage">
+                <div *ngFor="let damage of selectedCar?.carDamageDetails"
+                  class="border border-secondary rounded p-2 mb-2">
+                  <p>
+                    <strong>Tarih:</strong> {{ damage.damageDate | date:'dd-MM-yyyy' }}<br>
+                    <strong>Açıklama:</strong> {{ damage.description }}<br>
+                    <strong>Onarım Maliyeti:</strong> {{ damage.repairCost | currency : '₺' : 'symbol-narrow' : '1.2-2'
+                    }}
+                  </p>
+                </div>
+              </div>
+              <ng-template #noDamage>
+                <p>Herhangi bir hasar bulunamadı</p>
+              </ng-template>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="helpdesk" role="tabpanel" aria-labelledby="helpdesk-tab">
+            <div class="chat-messages">
+              <div *ngIf="messages.length > 0; else noMessages">
+                <div *ngFor="let userMessages of groupedMessages | keyvalue">
+                  <div class="accordion-item  mb-3 shadow-sm">
+                    <h2 class="accordion-header" id="heading{{userMessages.key}}">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        [attr.data-bs-target]="'#collapse' + userMessages.key"
+                        [attr.aria-controls]="'collapse' + userMessages.key" aria-expanded="false">
+                        Kullanıcı: {{ getUserName(+userMessages.key) }} - {{ userMessages.value.length }} mesaj
+                      </button>
+                    </h2>
+                    <div id="collapse{{userMessages.key}}" class="accordion-collapse collapse"
+                      [attr.aria-labelledby]="'heading' + userMessages.key" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                        <div *ngFor="let message of userMessages.value"
+                          [ngClass]="{'message-service': message.messageId === 1, 'message-customer': message.messageId === 0}">
+                          <p>{{ message.message }}</p>
+                          <span>{{ message.messageDate | date:'dd/MM/yyyy, HH:mm' }}</span>
+                        </div>
+                        <div class="chat-input mt-3">
+                          <input type="text" [(ngModel)]="newMessage" placeholder="Mesajınızı yazın..."
+                            (focus)="setReplyUserId(+userMessages.key)">
+                          <button class="btn btn-primary mt-2" (click)="sendMessage()">Gönder</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noMessages>
+                <p>Mesaj bulunamadı</p>
+              </ng-template>
+            </div>
+            <!--<div class="chat-messages">
+              <div *ngIf="messages.length > 0; else noMessages">
+              <div *ngFor="let message of messages" [ngClass]="{'message-service': message.messageId === 1, 'message-customer': message.messageId === 0}">
+                <p>{{ message.message }}</p>
+                <span>{{ message.messageDate | date:'short' }}</span>
+              </div>
+            </div>
+            </div>
+            <ng-template #noMessages>
+              <p>Mesaj bulunamadı</p>
+            </ng-template>
+            <div class="chat-input">
+              <input type="text" [(ngModel)]="newMessage" placeholder="Mesajınızı yazın...">
+              <button (click)="sendMessage()">Gönder</button>
+            </div>-->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button *ngIf="activeTab === 'details-tab' && selectedCar" class="btn btn-primary"
+          (click)="openUpdateCarModal(selectedCar!)" data-bs-toggle="modal"
+          data-bs-target="#updateCarModal">Güncelle</button>
+        <button *ngIf="activeTab === 'damages-tab'" class="btn btn-primary" (click)="openAddDamageModal()"
+          data-bs-toggle="modal" data-bs-target="#addDamageModal">Hasar Kaydı Ekle</button>
+        <button *ngIf="activeTab === 'features-tab'" class="btn btn-primary" (click)="openAddSpecificationModal()"
+          data-bs-toggle="modal" data-bs-target="#addSpecificationModal">Özellik Ekle</button>
+        <button *ngIf="activeTab === 'conditions-tab'" class="btn btn-primary" (click)="openAddRentingConditionModal()"
+          data-bs-toggle="modal" data-bs-target="#addCarRentingConditionsModal">Kiralama Koşulu Ekle</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="setActiveTab('details-tab')"
+          (click)="clearCarImages()">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Yeni Araç Ekleme Modal -->
+<div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCarModalLabel">Yeni Araç Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #carForm="ngForm" (ngSubmit)="addCar()">
+          <div class="row mb-3">
+            <div class="col">
+              <label for="brand" class="form-label">Marka</label>
+              <select class="form-select" id="brandSelect" (change)="onBrandChange($event)">
+                <option value="" disabled selected>Seçiniz</option>
+                <option *ngFor="let brand of brands" [value]="brand.brandId">{{ brand.brandName }}</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['brand']?.valid" class="text-danger">Marka gereklidir.
+              </div>
+            </div>
+            <div class="col">
+              <label for="model" class="form-label">Model</label>
+              <select class="form-select" id="modelSelect" [(ngModel)]="newCar.modelId" name="model"
+                [disabled]="!models.length">
+                <option *ngFor="let model of models" [value]="model.modelId">{{ model.modelName }}</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['model']?.valid" class="text-danger">Model gereklidir.
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="color" class="form-label">Renk</label>
+              <select class="form-select" id="color" [(ngModel)]="newCar.color" name="color" required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option *ngFor="let color of colors" [value]="color">{{ color }}</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['color']?.valid" class="text-danger">Renk gereklidir.
+              </div>
+            </div>
+            <div class="col">
+              <label for="licensePlate" class="form-label">Plaka</label>
+              <input type="text" class="form-control" id="licensePlate" [(ngModel)]="newCar.licensePlate"
+                name="licensePlate" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['licensePlate']?.valid" class="text-danger">Plaka
+                gereklidir.</div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="carClassId" class="form-label">Araç Sınıfı</label>
+              <select class="form-select" id="carClassId" [(ngModel)]="newCar.carClassId" name="carClassId" required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option *ngFor="let carClass of carClasses" [value]="carClass.carClassId">{{
+                  carClass.carClassDescription }}</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['carClassId']?.valid" class="text-danger">Araç Sınıfı
+                gereklidir.</div>
+            </div>
+            <div class="col">
+              <label for="gearshift" class="form-label">Vites Türü</label>
+              <select class="form-select" id="gearshift" [(ngModel)]="newCar.gearshift" name="gearshift" required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option [ngValue]="true">Otomatik</option>
+                <option [ngValue]="false">Manuel</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['gearshift']?.valid" class="text-danger">Vites Türü
+                gereklidir.</div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="passengers" class="form-label">Yolcu Kapasitesi</label>
+              <input type="number" class="form-control" id="passengers" [(ngModel)]="newCar.passengers"
+                name="passengers" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['passengers']?.valid" class="text-danger">Yolcu
+                Kapasitesi gereklidir.</div>
+            </div>
+            <div class="col">
+              <label for="bags" class="form-label">Bagaj Kapasitesi</label>
+              <input type="number" class="form-control" id="bags" [(ngModel)]="newCar.bags" name="bags" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['bags']?.valid" class="text-danger">Bagaj Kapasitesi
+                gereklidir.</div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="doors" class="form-label">Kapı Sayısı</label>
+              <input type="number" class="form-control" id="doors" [(ngModel)]="newCar.doors" name="doors" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['doors']?.valid" class="text-danger">Kapı Sayısı
+                gereklidir.</div>
+            </div>
+            <div class="col">
+              <label for="year" class="form-label">Model Yılı</label>
+              <input type="number" class="form-control" id="year" [(ngModel)]="newCar.year" name="year" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['year']?.valid" class="text-danger">Model Yılı
+                gereklidir.</div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="dailyPrice" class="form-label">Günlük Fiyat</label>
+              <input type="number" class="form-control" id="dailyPrice" [(ngModel)]="newCar.dailyPrice"
+                name="dailyPrice" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['dailyPrice']?.valid" class="text-danger">Günlük Fiyat
+                gereklidir.</div>
+            </div>
+            <div class="col">
+              <label for="status" class="form-label">Durum</label>
+              <select class="form-select" id="status" [(ngModel)]="newCar.status" name="status" required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option value="Aktif">Aktif</option>
+                <option value="Pasif">Pasif</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['status']?.valid" class="text-danger">Durum gereklidir.
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="fuelType" class="form-label">Yakıt Türü</label>
+              <select class="form-select" id="status" [(ngModel)]="newCar.fuelType" name="fuelType" required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option value="Benzin">Benzin</option>
+                <option value="Dizel">Dizel</option>
+                <option value="Elektrik">Elektrik</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['fuelType']?.valid" class="text-danger">Yakıt Türü
+                gereklidir.</div>
+            </div>
+            <div class="col">
+              <label for="carType" class="form-label">Araba Türü</label>
+              <select class="form-select" id="color" [(ngModel)]="newCar.carType" name="carType" required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option *ngFor="let carType of carTypes" [value]="carType">{{ carType }}</option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['carType']?.valid" class="text-danger">Araba Türü
+                gereklidir.</div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="km" class="form-label">KM</label>
+              <input type="number" class="form-control" id="km" [(ngModel)]="newCar.km" name="km" required>
+              <div *ngIf="carForm.submitted && !carForm.controls['km']?.valid" class="text-danger">KM gereklidir.</div>
+            </div>
+            <div class="col">
+              <label for="chassisNo" class="form-label">Şasi No</label>
+              <input type="text" class="form-control" id="chassisNo" [(ngModel)]="newCar.chassisNo" name="chassisNo"
+                required>
+              <div *ngIf="carForm.submitted && !carForm.controls['chassisNo']?.valid" class="text-danger">Şasi No
+                gereklidir.</div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="locationId" class="form-label">Konum</label>
+              <select class="form-select" id="locationSelect" [(ngModel)]="newCar.locationId" name="locationId"
+                required>
+                <option value="" disabled selected>Seçiniz</option>
+                <option *ngFor="let location of locations" [value]="location.locationId">{{ location.locationName }}
+                </option>
+              </select>
+              <div *ngIf="carForm.submitted && !carForm.controls['locationId']?.valid" class="text-danger">Konum
+                gereklidir.</div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="carForm.invalid">Ekle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hasar Kaydı Ekleme Modal -->
+<div class="modal fade" id="addDamageModal" tabindex="-1" aria-labelledby="addDamageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDamageModalLabel">Hasar Kaydı Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="addDamageDetail()" #damageForm="ngForm">
+          <div class="row mb-3">
+            <div class="col">
+              <label for="damageDate" class="form-label">Hasar Tarihi</label>
+              <input type="date" id="damageDate" class="form-control" [(ngModel)]="newDamageDetail.damageDate"
+                name="damageDate" required>
+            </div>
+            <div class="col">
+              <label for="description" class="form-label">Açıklama</label>
+              <input type="text" id="description" class="form-control" [(ngModel)]="newDamageDetail.description"
+                name="description" required>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="repairCost" class="form-label">Tamir Maliyeti</label>
+              <input type="number" id="repairCost" class="form-control" [(ngModel)]="newDamageDetail.repairCost"
+                name="repairCost" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Özellik Ekleme Modal -->
+<div class="modal fade" id="addSpecificationModal" tabindex="-1" aria-labelledby="addSpecificationModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSpecificationModalLabel">Özellik Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="addCarSpecifications()" #specificationForm="ngForm">
+          <div class="row mb-3">
+            <div class="col">
+              <label for="specificationDescriptionId" class="form-label">Özellikler</label>
+              <select class="form-select" id="specificationDescriptionId"
+                [(ngModel)]="selectedSpecificationDescriptions" name="specificationDescriptionId" multiple required>
+                <option *ngFor="let spec of specificationDescriptions" [value]="spec.specificationDescriptionId">{{
+                  spec.description }}</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Kiralama Koşulu Ekleme Modal -->
+<div class="modal fade" id="addCarRentingConditionsModal" tabindex="-1"
+  aria-labelledby="addCarRentingConditionsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCarRentingConditionsModalLabel">Kiralama Koşulu Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="addCarRentingCondition()" #rentingConditionForm="ngForm">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="rentingConditionSelect" class="form-label">Kiralama Koşulu</label>
+              <select class="form-select" id="rentingConditionSelect" [(ngModel)]="selectedRentingConditionId"
+                name="rentingConditionSelect" required>
+                <option *ngFor="let condition of rentingConditions" [value]="condition.rentingConditionId">{{
+                  condition.rentingConditionName }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="conditionValue" class="form-label">Koşul Değeri</label>
+              <input type="text" class="form-control" id="conditionValue" [(ngModel)]="newConditionValue"
+                name="conditionValue" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fotoğraf Ekleme Modal -->
+<div class="modal fade" id="addImageModal" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addImageModalLabel">Fotoğraf Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="addImages()" #imageForm="ngForm">
+          <div class="row mb-3">
+            <div class="col">
+              <label for="imageFiles" class="form-label">Fotoğraflar</label>
+              <input type="file" id="imageFiles" class="form-control" (change)="onFileSelected($event)">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Teslim Al Pop-up -->
+<div class="modal fade" id="receiveCarModal" tabindex="-1" aria-labelledby="receiveCarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="receiveCarModalLabel">Aracı Teslim Al</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="receiveCarForm" (ngSubmit)="onReceiveCarSubmit()">
+          <div class="mb-3">
+            <label for="carStatus" class="form-label"><strong>Durum</strong></label>
+            <select class="form-select" id="carStatus" formControlName="carStatus">
+              <option value="Aktif">Aktif</option>
+              <option value="Bakımda">Bakımda</option>
+            </select>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="currentKm" class="form-label">Mevcut KM</label>
+              <input type="number" id="currentKm" class="form-control" formControlName="currentKm"
+                placeholder="Mevcut KM: {{ selectedCar?.km }}" required>
+              <div *ngIf="receiveCarForm.controls['currentKm'].errors?.['invalidKm']">
+                <small class="text-danger">Mevcut kilometre, aracın şu anki kilometresinden küçük olamaz.</small>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+          <h5>Hasar Kaydı Ekle</h5>
+          <div class="mb-3">
+            <label for="damageDate" class="form-label"><strong>Hasar Tarihi</strong></label>
+            <input type="date" class="form-control" id="damageDate" formControlName="damageDate">
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label"><strong>Açıklama</strong></label>
+            <input type="text" class="form-control" id="description" formControlName="description">
+          </div>
+          <div class="mb-3">
+            <label for="repairCost" class="form-label"><strong>Tamir Maliyeti</strong></label>
+            <input type="number" class="form-control" id="repairCost" formControlName="repairCost">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Teslim Al</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Araç güncelleme modeli -->
+<div class="modal fade" id="updateCarModal" tabindex="-1" aria-labelledby="updateCarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateCarModalLabel">Araç Bilgilerini Güncelle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #updateCarForm="ngForm" (ngSubmit)="updateCar()">
+          <div *ngIf="selectedCar">
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateBrand" class="form-label">Marka</label>
+                <select class="form-select" id="updateBrand" [(ngModel)]="tempCar.model.brandId"
+                  name="updateBrand" (change)="onBrandChange($event)">
+                  <option *ngFor="let brand of brands" [value]="brand.brandId">{{ brand.brandName }}</option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="updateModel" class="form-label">Model</label>
+                <select class="form-select" id="updateModel" [(ngModel)]="tempCar.model.modelId" name="updateModel"
+                  [disabled]="!models.length">
+                  <option *ngFor="let model of models" [value]="model.modelId">{{ model.modelName }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateColor" class="form-label">Renk</label>
+                <select class="form-select" id="updateColor" [(ngModel)]="tempCar.color" name="updateColor" required>
+                  <option *ngFor="let color of colors" [value]="color">{{ color }}</option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="updateLicensePlate" class="form-label">Plaka</label>
+                <input type="text" class="form-control" id="updateLicensePlate" [(ngModel)]="tempCar.licensePlate"
+                  name="updateLicensePlate" required>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateCarClassId" class="form-label">Araç Sınıfı</label>
+                <select class="form-select" id="updateCarClassId" [(ngModel)]="tempCar.carClass.carClassId"
+                  name="updateCarClassId" required>
+                  <option *ngFor="let carClass of carClasses" [value]="carClass.carClassId">
+                    {{ carClass.carClassDescription }}
+                  </option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="updateGearshift" class="form-label">Vites Türü</label>
+                <select class="form-select" id="updateGearshift" [(ngModel)]="tempCar.gearshift"
+                  name="updateGearshift" required>
+                  <option [ngValue]="true">Otomatik</option>
+                  <option [ngValue]="false">Manuel</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updatePassengers" class="form-label">Yolcu Kapasitesi</label>
+                <input type="number" class="form-control" id="updatePassengers" [(ngModel)]="tempCar.passengers"
+                  name="updatePassengers" required>
+              </div>
+              <div class="col">
+                <label for="updateBags" class="form-label">Bagaj Kapasitesi</label>
+                <input type="number" class="form-control" id="updateBags" [(ngModel)]="tempCar.bags" name="updateBags"
+                  required>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateDoors" class="form-label">Kapı Sayısı</label>
+                <input type="number" class="form-control" id="updateDoors" [(ngModel)]="tempCar.doors" name="updateDoors"
+                  required>
+              </div>
+              <div class="col">
+                <label for="updateYear" class="form-label">Model Yılı</label>
+                <input type="number" class="form-control" id="updateYear" [(ngModel)]="tempCar.year" name="updateYear"
+                  required>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateDailyPrice" class="form-label">Günlük Fiyat</label>
+                <input type="number" class="form-control" id="updateDailyPrice" [(ngModel)]="tempCar.dailyPrice"
+                  name="updateDailyPrice" required>
+              </div>
+              <div class="col">
+                <label for="updateStatus" class="form-label">Durum</label>
+                <select class="form-select" id="updateStatus" [(ngModel)]="tempCar.status" name="updateStatus" required>
+                  <option value="Aktif">Aktif</option>
+                  <option value="Pasif">Pasif</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateFuelType" class="form-label">Yakıt Türü</label>
+                <select class="form-select" id="updateFuelType" [(ngModel)]="tempCar.fuelType" name="updateFuelType"
+                  required>
+                  <option value="Benzin">Benzin</option>
+                  <option value="Dizel">Dizel</option>
+                  <option value="Elektrik">Elektrik</option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="updateCarType" class="form-label">Araba Türü</label>
+                <select class="form-select" id="updateCarType" [(ngModel)]="tempCar.carType" name="updateCarType"
+                  required>
+                  <option *ngFor="let carType of carTypes" [value]="carType">{{ carType }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateKm" class="form-label">KM</label>
+                <input type="number" class="form-control" id="updateKm" [(ngModel)]="tempCar.km" name="updateKm" required>
+              </div>
+              <div class="col">
+                <label for="updateChassisNo" class="form-label">Şasi No</label>
+                <input type="text" class="form-control" id="updateChassisNo" [(ngModel)]="tempCar.chassisNo"
+                  name="updateChassisNo" required>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateLocationId" class="form-label">Konum</label>
+                <select class="form-select" id="updateLocationId" [(ngModel)]="tempCar.locationId"
+                  name="updateLocationId" required>
+                  <option *ngFor="let location of locations" [value]="location.locationId">{{ location.locationName }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="updateIsDeleted" class="form-label">Araç Listelenme Durumu</label>
+                <select class="form-select" id="updateIsDeleted" [(ngModel)]="tempCar.isDeleted" name="updateIsDeleted"
+                  required>
+                  <option [ngValue]="false">Araç Listeleniyor</option>
+                  <option [ngValue]="true">Araç Listelenmiyor</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="updateCarForm.invalid">Güncelle</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
